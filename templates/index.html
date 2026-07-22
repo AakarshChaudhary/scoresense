@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+    <!-- hero section -->
+    <div class="hero">
+        <h2>Welcome to Your Analytics Dashboard</h2>
+        <p>Track marks, spot trends, and generate results — all in one place.</p>
+    </div>
+
+    <!-- quick stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.total_students }}</span>
+            <span class="stat-label">Total Students</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.avg_percentage }}%</span>
+            <span class="stat-label">Class Average</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.pass_percentage }}%</span>
+            <span class="stat-label">Pass Rate</span>
+        </div>
+    </div>
+
+    <!-- feature cards linking to each page -->
+    <h3>Quick Actions</h3>
+    <div class="features">
+        <a href="/add" class="feature-card">
+            <span class="feature-icon">➕</span>
+            <span class="feature-title">Add Student</span>
+            <span class="feature-desc">Enter marks for a new student</span>
+        </a>
+        <a href="/students" class="feature-card">
+            <span class="feature-icon">📋</span>
+            <span class="feature-title">View All</span>
+            <span class="feature-desc">See every student's record and result</span>
+        </a>
+        <a href="/search" class="feature-card">
+            <span class="feature-icon">🔍</span>
+            <span class="feature-title">Search</span>
+            <span class="feature-desc">Find a student by name or roll no</span>
+        </a>
+        <a href="/analysis" class="feature-card">
+            <span class="feature-icon">📊</span>
+            <span class="feature-title">Analysis</span>
+            <span class="feature-desc">View performance graphs</span>
+        </a>
+    </div>
+{% endblock %}

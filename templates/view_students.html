@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>All Students</h2>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Name</th><th>Roll No</th><th>Physics</th><th>Chemistry</th>
+            <th>Maths</th><th>Total</th><th>Percentage</th><th>Grade</th>
+        </tr>
+        <!-- loop through each student row -->
+        {% for s in students %}
+        <tr>
+            <td>{{ s.Name }}</td>
+            <td>{{ s.RollNo }}</td>
+            <td>{{ s.Physics }}</td>
+            <td>{{ s.Chemistry }}</td>
+            <td>{{ s.Maths }}</td>
+            <td>{{ s.Total }}</td>
+            <td>{{ s.Percentage }}</td>
+            <td>{{ s.Grade }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

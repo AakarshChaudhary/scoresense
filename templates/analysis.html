@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>Performance Analysis</h2>
+
+    <!-- show message if no data yet -->
+    {% if not has_data %}
+        <p>No student data available yet. Add some students first.</p>
+    {% else %}
+        <h3>Subject Wise Average Marks</h3>
+        <img src="{{ url_for('static', filename='graphs/subject_avg.png') }}">
+
+        <h3>Topper Comparison</h3>
+        <img src="{{ url_for('static', filename='graphs/toppers.png') }}">
+
+        <h3>Pass / Fail Ratio</h3>
+        <img src="{{ url_for('static', filename='graphs/pass_fail.png') }}">
+
+        <h3>Student Wise Progress</h3>
+        <img src="{{ url_for('static', filename='graphs/progress.png') }}">
+    {% endif %}
+{% endblock %}

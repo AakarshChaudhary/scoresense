@@ -1,0 +1,239 @@
+/* import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap');
+
+/* reset default spacing */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #F5F6FA;
+    color: #1E2233;
+}
+
+/* top header bar - gradient */
+header {
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    color: white;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+header h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* navigation bar - pill style links */
+nav {
+    background-color: #FFFFFF;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+nav a {
+    color: #4F46E5;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: background-color 0.2s ease;
+}
+
+nav a:hover {
+    background-color: #EEF0FF;
+}
+
+/* main content area */
+.container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: #FFFFFF;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+h2 {
+    font-family: 'Poppins', sans-serif;
+    margin-bottom: 18px;
+    color: #1E2233;
+    font-size: 21px;
+}
+
+h3 {
+    font-family: 'Poppins', sans-serif;
+    margin: 22px 0 10px;
+    color: #1E2233;
+    font-size: 16px;
+}
+
+/* form styling */
+form input[type="text"],
+form input[type="number"] {
+    padding: 10px 12px;
+    margin: 6px 0 16px;
+    border: 1.5px solid #E2E4EC;
+    border-radius: 8px;
+    width: 260px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+form input[type="text"]:focus,
+form input[type="number"]:focus {
+    outline: none;
+    border-color: #4F46E5;
+}
+
+form input[type="submit"] {
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    color: white;
+    padding: 11px 22px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    transition: opacity 0.2s ease;
+}
+
+form input[type="submit"]:hover {
+    opacity: 0.9;
+}
+
+/* table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+table th, table td {
+    padding: 12px 10px;
+    text-align: center;
+}
+
+table th {
+    background-color: #F5F6FA;
+    color: #6B7280;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 2px solid #E2E4EC;
+}
+
+table td {
+    border-bottom: 1px solid #EEF0F4;
+}
+
+table tr:hover {
+    background-color: #F9FAFF;
+}
+
+/* graph images on analysis page */
+.container img {
+    max-width: 100%;
+    margin-bottom: 22px;
+    border-radius: 10px;
+    border: 1px solid #E2E4EC;
+}
+
+/* hero section on home page */
+.hero {
+    text-align: center;
+    padding: 10px 0 25px;
+}
+
+.hero h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.hero p {
+    color: #6B7280;
+    font-size: 14px;
+}
+
+/* quick stats row */
+.stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    flex: 1;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    color: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-family: 'Poppins', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.stat-label {
+    display: block;
+    font-size: 13px;
+    opacity: 0.9;
+    margin-top: 4px;
+}
+
+/* feature cards grid */
+.features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.feature-card {
+    display: flex;
+    flex-direction: column;
+    background: #F9FAFF;
+    border: 1.5px solid #E2E4EC;
+    border-radius: 12px;
+    padding: 18px;
+    text-decoration: none;
+    color: #1E2233;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.feature-card:hover {
+    border-color: #4F46E5;
+    transform: translateY(-2px);
+}
+
+.feature-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.feature-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.feature-desc {
+    font-size: 12.5px;
+    color: #6B7280;
+}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Student Performance Analytics Portal</title>
+    <!-- link the css file -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <!-- header -->
+    <header>
+      <h1>Student Performance Analytics Portal</h1>
+    </header>
+
+    <!-- navigation bar shown on every page -->
+    <nav>
+      <a href="/">Home</a>
+      <a href="/add">Add Student</a>
+      <a href="/students">View All</a>
+      <a href="/search">Search</a>
+      <a href="/analysis">Performance Analysis</a>
+    </nav>
+
+    <!-- page specific content goes here -->
+    <div class="container">{% block content %}{% endblock %}</div>
+  </body>
+</html>
