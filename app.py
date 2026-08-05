@@ -9,11 +9,40 @@ app = Flask(__name__)
 
 CSV_FILE = 'students.csv'
 GRAPH_FOLDER = 'static/graphs'
+SUBJECTS = ['Physics', 'Chemistry', 'Maths', 'English', 'IP']
+CSV_COLUMNS = ['Name', 'RollNo'] + SUBJECTS
 
-# create csv with headers if it does not exist yet
-if not os.path.exists(CSV_FILE):
-    df = pd.DataFrame(columns=['Name', 'RollNo', 'Physics', 'Chemistry', 'Maths'])
-    df.to_csv(CSV_FILE, index=False)
+
+def ensure_csv_schema():
+    if not os.path.exists(CSV_FILE):
+        df = pd.DataFrame(columns=CSV_COLUMNS)
+        df.to_csv(CSV_FILE, index=False)
+        return
+
+    df = pd.read_csv(CSV_FILE, dtype={'RollNo': str})
+    changed = False
+
+    for column in CSV_COLUMNS:
+        if column not in df.columns:
+            df[column] = 0.0 if column in SUBJECTS else ''
+            changed = True
+
+    ordered_columns = CSV_COLUMNS + [column for column in df.columns if column not in CSV_COLUMNS]
+    if changed or list(df.columns) != ordered_columns:
+        df = df[ordered_columns]
+        df.to_csv(CSV_FILE, index=False)
+
+
+def load_students():
+    ensure_csv_schema()
+    df = pd.read_csv(CSV_FILE, dtype={'RollNo': str})
+    df['RollNo'] = df['RollNo'].fillna('').astype(str)
+    for subject in SUBJECTS:
+        df[subject] = pd.to_numeric(df[subject], errors='coerce').fillna(0)
+    return df
+
+
+ensure_csv_schema()
 
 # create graphs folder if it does not exist
 if not os.path.exists(GRAPH_FOLDER):
@@ -21,9 +50,9 @@ if not os.path.exists(GRAPH_FOLDER):
 
 
 # calculates total, percentage and grade for one student
-def calculate_result(physics, chemistry, maths):
-    total = physics + chemistry + maths
-    percentage = total / 3
+def calculate_result(student):
+    total = sum(float(student[subject]) for subject in SUBJECTS)
+    percentage = total / len(SUBJECTS)
     if percentage >= 90:
         grade = 'A+'
     elif percentage >= 75:
@@ -36,16 +65,30 @@ def calculate_result(physics, chemistry, maths):
         grade = 'Fail'
     return total, percentage, grade
 
+
+def build_student_result(row):
+    total, percentage, grade = calculate_result(row)
+    result = {
+        'Name': row['Name'],
+        'RollNo': row['RollNo'],
+        'Total': total,
+        'Percentage': round(percentage, 2),
+        'Grade': grade
+    }
+    for subject in SUBJECTS:
+        result[subject] = row[subject]
+    return result
+
 # home page - shows quick stats and feature cards
 @app.route('/')
 def index():
-    df = pd.read_csv(CSV_FILE)
+    df = load_students()
 
     if df.empty:
         stats = {'total_students': 0, 'avg_percentage': 0, 'pass_percentage': 0}
     else:
         # calculate percentage for each student
-        df['Percentage'] = (df['Physics'] + df['Chemistry'] + df['Maths']) / 3
+        df['Percentage'] = df[SUBJECTS].sum(axis=1) / len(SUBJECTS)
         total_students = len(df)
         avg_percentage = round(df['Percentage'].mean(), 1)
         pass_count = (df['Percentage'] >= 40).sum()
@@ -66,18 +109,15 @@ def add_student():
         # get form data
         name = request.form['name']
         roll_no = request.form['roll_no']
-        physics = float(request.form['physics'])
-        chemistry = float(request.form['chemistry'])
-        maths = float(request.form['maths'])
 
         # read existing data
-        df = pd.read_csv(CSV_FILE)
+        df = load_students()
 
         # add new row
-        new_row = pd.DataFrame([{
-            'Name': name, 'RollNo': roll_no,
-            'Physics': physics, 'Chemistry': chemistry, 'Maths': maths
-        }])
+        new_student = {'Name': name, 'RollNo': roll_no}
+        for subject in SUBJECTS:
+            new_student[subject] = float(request.form[subject.lower()])
+        new_row = pd.DataFrame([new_student])
         df = pd.concat([df, new_row], ignore_index=True)
 
         # save back to csv
@@ -85,25 +125,18 @@ def add_student():
 
         return redirect(url_for('view_students'))
 
-    return render_template('add_student.html')
+    return render_template('add_student.html', subjects=SUBJECTS)
 
 
 # view all students with calculated result columns
 @app.route('/students')
 def view_students():
-    df = pd.read_csv(CSV_FILE)
+    df = load_students()
 
     # add total, percentage, grade columns for display
-    results = []
-    for _, row in df.iterrows():
-        total, percentage, grade = calculate_result(row['Physics'], row['Chemistry'], row['Maths'])
-        results.append({
-            'Name': row['Name'], 'RollNo': row['RollNo'],
-            'Physics': row['Physics'], 'Chemistry': row['Chemistry'], 'Maths': row['Maths'],
-            'Total': total, 'Percentage': round(percentage, 2), 'Grade': grade
-        })
+    results = [build_student_result(row) for _, row in df.iterrows()]
 
-    return render_template('view_students.html', students=results)
+    return render_template('view_students.html', students=results, subjects=SUBJECTS)
 
 
 # search student by name or roll no
@@ -112,44 +145,40 @@ def search():
     matches = []
     if request.method == 'POST':
         query = request.form['query'].strip().lower()
-        df = pd.read_csv(CSV_FILE)
+        df = load_students()
 
         # filter rows where name or roll no matches the query
         df['RollNo'] = df['RollNo'].astype(str)
+        df['Name'] = df['Name'].astype(str)
         filtered = df[
             df['Name'].str.lower().str.contains(query) |
             df['RollNo'].str.lower().str.contains(query)
         ]
 
-        for _, row in filtered.iterrows():
-            total, percentage, grade = calculate_result(row['Physics'], row['Chemistry'], row['Maths'])
-            matches.append({
-                'Name': row['Name'], 'RollNo': row['RollNo'],
-                'Physics': row['Physics'], 'Chemistry': row['Chemistry'], 'Maths': row['Maths'],
-                'Total': total, 'Percentage': round(percentage, 2), 'Grade': grade
-            })
+        matches = [build_student_result(row) for _, row in filtered.iterrows()]
 
-    return render_template('search.html', students=matches)
+    return render_template('search.html', students=matches, subjects=SUBJECTS)
 
 
 # generate all 4 graphs and show analysis page
 @app.route('/analysis')
 def analysis():
-    df = pd.read_csv(CSV_FILE)
+    df = load_students()
 
     if df.empty:
         return render_template('analysis.html', has_data=False)
 
     # calculate total marks per student for pass/fail and progress charts
-    df['Total'] = df['Physics'] + df['Chemistry'] + df['Maths']
-    df['Percentage'] = df['Total'] / 3
+    df['Total'] = df[SUBJECTS].sum(axis=1)
+    df['Percentage'] = df['Total'] / len(SUBJECTS)
 
     # 1. subject wise average marks - bar chart
     plt.figure(figsize=(6, 4))
-    subject_avg = [df['Physics'].mean(), df['Chemistry'].mean(), df['Maths'].mean()]
-    plt.bar(['Physics', 'Chemistry', 'Maths'], subject_avg, color=['#4F46E5', '#7C3AED', '#A78BFA'])
+    subject_avg = [df[subject].mean() for subject in SUBJECTS]
+    plt.bar(SUBJECTS, subject_avg, color=['#4F46E5', '#7C3AED', '#A78BFA', '#0EA5E9', '#10B981'])
     plt.title('Subject Wise Average Marks')
     plt.ylabel('Average Marks')
+    plt.tight_layout()
     plt.savefig(f'{GRAPH_FOLDER}/subject_avg.png')
     plt.close()
 

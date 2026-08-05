@@ -10,16 +10,22 @@
     {% if students %}
     <table border="1" cellpadding="6">
         <tr>
-            <th>Name</th><th>Roll No</th><th>Physics</th><th>Chemistry</th>
-            <th>Maths</th><th>Total</th><th>Percentage</th><th>Grade</th>
+            <th>Name</th>
+            <th>Roll No</th>
+            {% for subject in subjects %}
+            <th>{{ subject }}</th>
+            {% endfor %}
+            <th>Total</th>
+            <th>Percentage</th>
+            <th>Grade</th>
         </tr>
         {% for s in students %}
         <tr>
             <td>{{ s.Name }}</td>
             <td>{{ s.RollNo }}</td>
-            <td>{{ s.Physics }}</td>
-            <td>{{ s.Chemistry }}</td>
-            <td>{{ s.Maths }}</td>
+            {% for subject in subjects %}
+            <td>{{ s[subject] }}</td>
+            {% endfor %}
             <td>{{ s.Total }}</td>
             <td>{{ s.Percentage }}</td>
             <td>{{ s.Grade }}</td>

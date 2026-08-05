@@ -46,13 +46,13 @@ student_portal/
 - `matplotlib.use('Agg')` tells Matplotlib to generate images without opening a graphical window — needed because Flask runs in the background, not on a desktop screen.
 
 ### Startup Checks
-- Checks if `students.csv` already exists. If not, creates one with just the column headers (`Name, RollNo, Physics, Chemistry, Maths`).
+- Checks if `students.csv` already exists. If not, creates one with just the column headers (`Name, RollNo, Physics, Chemistry, Maths, English, IP`).
 - Checks if the `static/graphs` folder exists, and creates it if missing — this is where graph images get saved.
 
 ### `calculate_result()` Function
-Takes Physics, Chemistry, Maths marks as input and returns:
-- `Total` = sum of all 3 subjects
-- `Percentage` = Total ÷ 3
+Takes Physics, Chemistry, Maths, English, and IP marks as input and returns:
+- `Total` = sum of all 5 subjects
+- `Percentage` = Total ÷ 5
 - `Grade` = decided using if/elif conditions on percentage:
   - 90+ → A+, 75+ → A, 60+ → B, 40+ → C, below 40 → Fail
 
@@ -95,7 +95,7 @@ This function is reused across multiple routes (Home, View All, Search) so the g
   5. `plt.close()` — clears the chart from memory so the next graph doesn't overlap
 
 The 4 graphs:
-- **Subject-wise Average** — bar chart of average marks per subject (`df['Physics'].mean()` etc.)
+- **Subject-wise Average** — bar chart of average marks per subject (`Physics`, `Chemistry`, `Maths`, `English`, and `IP`)
 - **Topper Comparison** — bar chart of the top 5 students by total marks (`sort_values()` + `head(5)`)
 - **Pass/Fail Pie Chart** — counts students with percentage ≥ 40 as Pass, rest as Fail
 - **Student Progress** — bar chart showing every student's percentage
@@ -113,9 +113,9 @@ The 4 graphs:
 
 - **`index.html`** — hero heading, a row of 3 stat cards (Total Students, Class Average, Pass Rate), and a 2×2 grid of feature cards linking to Add, View All, Search, and Analysis.
 
-- **`add_student.html`** — a simple form with 5 input fields (Name, Roll No, Physics, Chemistry, Maths) that POSTs to `/add`.
+- **`add_student.html`** — a simple form with 7 input fields (Name, Roll No, Physics, Chemistry, Maths, English, IP) that POSTs to `/add`.
 
-- **`view_students.html`** and **`search.html`** — both render a table with the same columns (Name, Roll No, Physics, Chemistry, Maths, Total, Percentage, Grade), looping through the data passed from `app.py`.
+- **`view_students.html`** and **`search.html`** — both render a table with the same columns (Name, Roll No, Physics, Chemistry, Maths, English, IP, Total, Percentage, Grade), looping through the data passed from `app.py`.
 
 - **`analysis.html`** — displays the 4 saved PNG graphs using `<img>` tags pointing to `static/graphs/`.
 
