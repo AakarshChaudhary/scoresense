@@ -5,9 +5,11 @@
         <tr>
             <th>Name</th>
             <th>Roll No</th>
-            {% for subject in subjects %}
-            <th>{{ subject }}</th>
-            {% endfor %}
+            <th>Physics</th>
+            <th>Chemistry</th>
+            <th>Maths</th>
+            <th>English</th>
+            <th>IP</th>
             <th>Total</th>
             <th>Percentage</th>
             <th>Grade</th>
@@ -17,9 +19,11 @@
         <tr>
             <td>{{ s.Name }}</td>
             <td>{{ s.RollNo }}</td>
-            {% for subject in subjects %}
-            <td>{{ s[subject] }}</td>
-            {% endfor %}
+            <td>{{ s.Physics }}</td>
+            <td>{{ s.Chemistry }}</td>
+            <td>{{ s.Maths }}</td>
+            <td>{{ s.English }}</td>
+            <td>{{ s.IP }}</td>
             <td>{{ s.Total }}</td>
             <td>{{ s.Percentage }}</td>
             <td>{{ s.Grade }}</td>

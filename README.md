@@ -1,142 +1,145 @@
-# Student Performance Analytics Portal — Code Explanation
+# Student Performance Analytics Portal
 
-A web application built with **Flask (Python)** that stores student marks in a CSV file, displays them in dashboards, and generates performance graphs using **Matplotlib**.
+This is a simple Flask web app for a school student marks project.
 
----
+It stores student marks in `students.csv`, shows the records on web pages, calculates results, and creates graphs.
 
-## 1. Tech Stack
+For virtual environment setup, read `VENV_SETUP.md`.
 
-| Technology | Purpose |
-|---|---|
-| Python | Programming language |
-| Flask | Web framework — handles routes/URLs and renders HTML pages |
-| Pandas | Reads/writes the CSV file and performs calculations (averages, filtering, sorting) |
-| Matplotlib | Generates the graphs as PNG images |
-| HTML + Jinja2 | Templates — Jinja2 is Flask's templating engine, lets us use `{{ }}` and `{% %}` inside HTML |
-| CSS | Styling (single file: `static/style.css`) |
-| CSV | Acts as our "database" — no SQL database is used |
+## What The App Does
 
----
+- Add a student and their marks
+- View all students
+- Search by name or roll number
+- Calculate total marks, percentage, and grade
+- Show performance graphs
 
-## 2. Folder Structure
+## Subjects Used
 
+The project uses 5 subjects:
+
+- Physics
+- Chemistry
+- Maths
+- English
+- IP
+
+## Project Files
+
+```text
+app.py
+students.csv
+requirements.txt
+VENV_SETUP.md
+static/
+  style.css
+  graphs/
+templates/
+  base.html
+  index.html
+  add_student.html
+  view_students.html
+  search.html
+  analysis.html
 ```
-student_portal/
-├── app.py                   → main Flask application (all backend logic/routes)
-├── students.csv               → stores all student data (our "database")
-├── static/
-│   ├── style.css              → all CSS styling
-│   └── graphs/                 → auto-generated PNG graphs saved here
-└── templates/
-    ├── base.html               → common layout (header, nav bar) — other pages extend this
-    ├── index.html               → home page (stats + feature cards)
-    ├── add_student.html          → form to add a new student
-    ├── view_students.html         → table showing all students + results
-    ├── search.html                → search form + results table
-    └── analysis.html               → displays the 4 graphs
+
+## What Each File Is For
+
+`app.py`
+
+This is the main Python file. It runs the Flask app, reads and writes `students.csv`, calculates results, and creates graphs.
+
+`students.csv`
+
+This is the student data file. It acts like a small database.
+
+Columns:
+
+```text
+Name, RollNo, Physics, Chemistry, Maths, English, IP
 ```
 
----
+`templates/`
 
-## 3. `app.py` — Backend Logic
+This folder has the HTML pages shown in the browser.
 
-### Imports and Setup
-- `Flask` creates the web server and defines routes (URLs).
-- `pandas` (as `pd`) reads and writes `students.csv` like a spreadsheet.
-- `matplotlib.use('Agg')` tells Matplotlib to generate images without opening a graphical window — needed because Flask runs in the background, not on a desktop screen.
+`static/style.css`
 
-### Startup Checks
-- Checks if `students.csv` already exists. If not, creates one with just the column headers (`Name, RollNo, Physics, Chemistry, Maths, English, IP`).
-- Checks if the `static/graphs` folder exists, and creates it if missing — this is where graph images get saved.
+This file controls the design, colors, spacing, tables, buttons, and cards.
 
-### `calculate_result()` Function
-Takes Physics, Chemistry, Maths, English, and IP marks as input and returns:
-- `Total` = sum of all 5 subjects
-- `Percentage` = Total ÷ 5
-- `Grade` = decided using if/elif conditions on percentage:
-  - 90+ → A+, 75+ → A, 60+ → B, 40+ → C, below 40 → Fail
+`static/graphs/`
 
-This function is reused across multiple routes (Home, View All, Search) so the grading logic isn't repeated.
+This folder stores graph images created by the app.
 
-### Routes (URLs)
+## How Marks Are Calculated
 
-**`/` (Home Page)**
-- Reads the full CSV into a DataFrame.
-- Calculates 3 quick stats: total number of students, class average percentage, and pass rate (percentage of students scoring ≥ 40%).
-- Passes these stats to `index.html` to display on the dashboard, along with feature cards linking to the other pages.
+For each student:
 
-**`/add` (Add Student) — GET and POST**
-- GET request shows the empty form.
-- POST request:
-  1. `request.form['name']` etc. reads the submitted form values.
-  2. `pd.read_csv()` loads the existing data into a DataFrame.
-  3. A new row is built and added using `pd.concat()`.
-  4. `df.to_csv()` saves the updated table back to the file.
-  5. `redirect()` sends the user to the View All page.
+```text
+Total = Physics + Chemistry + Maths + English + IP
+Percentage = Total / 5
+```
 
-**`/students` (View All)**
-- Reads the whole CSV.
-- Loops through each row, calling `calculate_result()` to get Total/Percentage/Grade.
-- Passes the combined data to `view_students.html` to render as a table.
+Grades:
 
-**`/search` (Search) — GET and POST**
-- POST request reads the search text from the form.
-- Converts both the search text and the data to lowercase (case-insensitive matching).
-- Uses `.str.contains()` from pandas to filter rows where Name or Roll No matches the query.
-- Matching rows go through `calculate_result()` before being displayed.
+```text
+90 or above = A+
+75 or above = A
+60 or above = B
+40 or above = C
+Below 40   = Fail
+```
 
-**`/analysis` (Performance Analysis)**
-- Reads the full CSV.
-- Generates 4 graphs using Matplotlib, each following the same pattern:
-  1. `plt.figure()` — creates a new blank chart
-  2. Chart-specific drawing code (`plt.bar()` or `plt.pie()`)
-  3. `plt.title()` / `plt.ylabel()` — add labels
-  4. `plt.savefig()` — saves the chart as a PNG file inside `static/graphs/`
-  5. `plt.close()` — clears the chart from memory so the next graph doesn't overlap
+## Pages In The App
 
-The 4 graphs:
-- **Subject-wise Average** — bar chart of average marks per subject (`Physics`, `Chemistry`, `Maths`, `English`, and `IP`)
-- **Topper Comparison** — bar chart of the top 5 students by total marks (`sort_values()` + `head(5)`)
-- **Pass/Fail Pie Chart** — counts students with percentage ≥ 40 as Pass, rest as Fail
-- **Student Progress** — bar chart showing every student's percentage
+`/`
 
----
+Home page. Shows total students, class average, and pass rate.
 
-## 4. Templates (HTML Files)
+`/add`
 
-- **`base.html`** is the parent template — contains the gradient header and navigation bar, plus a `{% block content %}` placeholder. Every other page extends this using `{% extends 'base.html' %}` and fills in only its own content, avoiding repeated header/nav code.
+Add Student page. Lets the user enter student details and marks.
 
-- **Jinja2 syntax used:**
-  - `{{ variable }}` → prints a Python value inside HTML
-  - `{% for s in students %} ... {% endfor %}` → loops through data (used to build table rows and feature cards)
-  - `{% if condition %} ... {% endif %}` → conditional display (e.g. "no data" message on the analysis page)
+`/students`
 
-- **`index.html`** — hero heading, a row of 3 stat cards (Total Students, Class Average, Pass Rate), and a 2×2 grid of feature cards linking to Add, View All, Search, and Analysis.
+View All page. Shows all student records with total, percentage, and grade.
 
-- **`add_student.html`** — a simple form with 7 input fields (Name, Roll No, Physics, Chemistry, Maths, English, IP) that POSTs to `/add`.
+`/search`
 
-- **`view_students.html`** and **`search.html`** — both render a table with the same columns (Name, Roll No, Physics, Chemistry, Maths, English, IP, Total, Percentage, Grade), looping through the data passed from `app.py`.
+Search page. Finds a student by name or roll number.
 
-- **`analysis.html`** — displays the 4 saved PNG graphs using `<img>` tags pointing to `static/graphs/`.
+`/analysis`
 
----
+Performance Analysis page. Shows graphs for the class.
 
-## 5. `static/style.css`
+## Simple Code Flow
 
-One CSS file styles the entire site, linked in `base.html` using `<link rel="stylesheet">`, so it applies to every page automatically.
+1. The browser opens a page like `/students`.
+2. Flask runs the matching function in `app.py`.
+3. The function reads `students.csv`.
+4. Python calculates the needed result.
+5. Flask sends the data to an HTML file in `templates/`.
+6. The browser displays the final page.
 
-- **Fonts:** Poppins for headings, Inter for body text (imported from Google Fonts).
-- **Color theme:** Indigo-to-violet gradient (`#4F46E5` → `#7C3AED`) used for the header, stat cards, buttons, and hover states.
-- **Layout:** `.container` centers page content in a white rounded card with a soft shadow. `.stats` and `.features` use CSS Flexbox/Grid to arrange the home page's stat cards and feature cards.
-- **Tables:** Clean borders, uppercase column headers, subtle row hover highlight.
-- **Forms:** Rounded input fields with a focus border color matching the theme.
+## Graphs Created
 
----
+The Analysis page creates 4 graphs:
 
-## 6. How the Pieces Fit Together
+- Subject Wise Average Marks
+- Topper Comparison
+- Pass / Fail Ratio
+- Student Wise Progress
 
-1. `app.py` is the single entry point — it defines all routes and connects them to templates.
-2. Every route reads/writes `students.csv` through pandas instead of a database.
-3. Templates only handle *display* — all calculations (totals, percentages, grades, stats, graph data) happen in `app.py`, keeping the HTML simple.
-4. `base.html` + CSS give a consistent look across all pages without repeating code.
-5. Matplotlib graphs are generated on-demand each time `/analysis` is visited, saved as image files, and displayed like any other image on the page.
+## Run The App
+
+After installing the requirements:
+
+```powershell
+python app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5050
+```
