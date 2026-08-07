@@ -253,11 +253,23 @@ def analysis():
     # 3. Pass/fail ratio.
     pass_count = len(students[students['Percentage'] >= 40])
     fail_count = len(students[students['Percentage'] < 40])
+    pass_percentage = round((pass_count / len(students)) * 100, 1)
 
-    plt.figure(figsize=(5, 5))
-    plt.pie([pass_count, fail_count], labels=['Pass', 'Fail'], colors=['#4F46E5', '#F43F5E'], autopct='%1.1f%%')
+    plt.figure(figsize=(4.5, 4.5))
+    plt.pie(
+        [pass_count, fail_count],
+        colors=['#2D6A4F', '#E11D48'],
+        startangle=90,
+        autopct='%1.1f%%',
+        pctdistance=0.78,
+        wedgeprops={'width': 0.38, 'edgecolor': 'white', 'linewidth': 3}
+    )
+    plt.text(0, 0.05, f'{pass_percentage}%', ha='center', va='center', fontsize=20, fontweight='bold')
+    plt.text(0, -0.14, 'Pass Rate', ha='center', va='center', fontsize=11, color='#64748B')
     plt.title('Pass / Fail Ratio')
-    plt.savefig(f'{GRAPH_FOLDER}/pass_fail.png')
+    plt.legend([f'Pass: {pass_count}', f'Fail: {fail_count}'], loc='lower center', bbox_to_anchor=(0.5, -0.08), ncol=2)
+    plt.tight_layout()
+    plt.savefig(f'{GRAPH_FOLDER}/pass_fail.png', bbox_inches='tight')
     plt.close()
 
     # 4. Percentage of every student.
