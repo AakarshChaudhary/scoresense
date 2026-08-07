@@ -169,38 +169,40 @@ def add_student():
     return render_template('add_student.html')
 
 
-# View all page: displays every student with total, percentage, and grade.
+# View all page: displays every student with total, percentage, grade, and search.
 @app.route('/students')
 def view_students():
+    search_text = request.args.get('query', '').strip().lower()
     students = read_students()
     student_results = []
 
     for _, row in students.iterrows():
         student_results.append(make_student_result(row))
 
-    return render_template('view_students.html', students=student_results)
+    if student_results:
+        percentages = [student['Percentage'] for student in student_results]
+        total_students = len(percentages)
+
+        for student in student_results:
+            below_or_equal = sum(1 for value in percentages if value <= student['Percentage'])
+            student['Percentile'] = round((below_or_equal / total_students) * 100, 2)
+
+    if search_text:
+        student_results = [
+            student for student in student_results
+            if search_text in str(student['Name']).lower() or search_text in str(student['RollNo']).lower()
+        ]
+
+    return render_template('view_students.html', students=student_results, query=search_text)
 
 
-# Search page: finds students by name or roll number.
+# Keep the old search URL as a simple redirect to the view-all page.
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-    student_results = []
-
     if request.method == 'POST':
-        search_text = request.form['query'].strip().lower()
-        students = read_students()
+        return redirect(url_for('view_students', query=request.form['query'].strip()))
 
-        students['Name'] = students['Name'].astype(str)
-        students['RollNo'] = students['RollNo'].astype(str)
-
-        name_matches = students['Name'].str.lower().str.contains(search_text, regex=False)
-        roll_matches = students['RollNo'].str.lower().str.contains(search_text, regex=False)
-        matching_students = students[name_matches | roll_matches]
-
-        for _, row in matching_students.iterrows():
-            student_results.append(make_student_result(row))
-
-    return render_template('search.html', students=student_results)
+    return redirect(url_for('view_students'))
 
 
 # Analysis page: creates graphs and shows them on the page.

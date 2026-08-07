@@ -2,6 +2,14 @@
 {% block content %}
     <h2>All Students</h2>
 
+    <form method="GET" class="search-box">
+        <label>Search by Name or Roll No
+            <input type="text" name="query" value="{{ query }}" placeholder="Type to filter records">
+        </label>
+        <input type="submit" value="Search">
+    </form>
+
+    {% if students %}
     <div class="table-box">
         <table>
             <tr>
@@ -14,6 +22,7 @@
                 <th>IP</th>
                 <th>Total</th>
                 <th>Percentage</th>
+                <th>Percentile</th>
                 <th>Grade</th>
             </tr>
 
@@ -29,9 +38,13 @@
                 <td>{{ s.IP }}</td>
                 <td>{{ s.Total }}</td>
                 <td>{{ s.Percentage }}</td>
+                <td>{{ s.Percentile }}</td>
                 <td>{{ s.Grade }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
+    {% else %}
+    <div class="empty-message">No matching student records found.</div>
+    {% endif %}
 {% endblock %}
