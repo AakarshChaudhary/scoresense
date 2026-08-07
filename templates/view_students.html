@@ -19,7 +19,7 @@
 
             <!-- loop through each student row -->
             {% for s in students %}
-            <tr>
+            <tr class="{% if s.Percentage|float >= 75 %}topper-row{% endif %}">
                 <td>{{ s.Name }}</td>
                 <td>{{ s.RollNo }}</td>
                 <td>{{ s.Physics }}</td>

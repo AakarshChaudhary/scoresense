@@ -288,6 +288,14 @@ tr:hover td {
     background: #F8FBFF;
 }
 
+.topper-row td {
+    background: #EAF7EE;
+}
+
+.topper-row:hover td {
+    background: #DDF1E3;
+}
+
 /* graphs */
 .graph-grid {
     display: grid;
