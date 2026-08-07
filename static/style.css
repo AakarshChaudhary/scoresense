@@ -77,6 +77,19 @@ h3 {
     margin: 24px 0 12px;
 }
 
+/* page toolbar */
+.page-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.page-toolbar h2 {
+    margin-bottom: 0;
+}
+
 /* home page intro */
 .hero {
     background: white;
@@ -203,7 +216,11 @@ h3 {
     display: flex;
     align-items: end;
     gap: 14px;
-    margin-bottom: 22px;
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 label {
@@ -348,8 +365,13 @@ tr:hover td {
         grid-template-columns: 1fr;
     }
 
+    .page-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
     .search-box {
-        display: block;
+        width: 100%;
     }
 
     .search-box input[type="submit"] {
