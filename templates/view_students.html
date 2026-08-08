@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
-    <div class="page-toolbar">
+    <div class="students-header">
         <h2>All Students</h2>
 
-        <form method="GET" class="search-box">
+        <form method="GET" class="search-form">
             <input type="text" name="query" value="{{ query }}" placeholder="Search by name or roll no">
             <input type="submit" value="Search">
         </form>
     </div>
 
     {% if students %}
-    <div class="table-box">
+    <div class="students-table-wrap">
         <table>
             <tr>
                 <th>Rank</th>

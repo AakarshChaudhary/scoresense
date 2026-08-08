@@ -77,8 +77,8 @@ h3 {
     margin: 24px 0 12px;
 }
 
-/* page toolbar */
-.page-toolbar {
+/* students page header */
+.students-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -86,7 +86,7 @@ h3 {
     margin-bottom: 20px;
 }
 
-.page-toolbar h2 {
+.students-header h2 {
     margin-bottom: 0;
 }
 
@@ -198,7 +198,7 @@ h3 {
 
 /* forms */
 .form-box,
-.search-box {
+.search-form {
     background: white;
     border: 1px solid #DDE4EE;
     border-radius: 8px;
@@ -212,7 +212,7 @@ h3 {
     gap: 16px;
 }
 
-.search-box {
+.search-form {
     display: flex;
     align-items: end;
     gap: 14px;
@@ -266,7 +266,7 @@ input[type="submit"]:hover {
 }
 
 /* tables */
-.table-box {
+.students-table-wrap {
     background: white;
     border: 1px solid #DDE4EE;
     border-radius: 8px;
@@ -373,16 +373,16 @@ tr:hover td {
         grid-template-columns: 1fr;
     }
 
-    .page-toolbar {
+    .students-header {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .search-box {
+    .search-form {
         width: 100%;
     }
 
-    .search-box input[type="submit"] {
+    .search-form input[type="submit"] {
         margin-top: 14px;
     }
 }
