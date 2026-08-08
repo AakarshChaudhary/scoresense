@@ -10,12 +10,11 @@ import os
 
 app = Flask(__name__)
 
-# File and folder names used by this project.
+# Simple project settings.
 CSV_FILE = 'students.csv'
 GRAPH_FOLDER = 'static/graphs'
-
-# These are the columns that should exist in students.csv.
 CSV_COLUMNS = ['Name', 'RollNo', 'Physics', 'Chemistry', 'Maths', 'English', 'IP']
+SUBJECT_COLUMNS = ['Physics', 'Chemistry', 'Maths', 'English', 'IP']
 
 
 def prepare_project_files():
@@ -29,223 +28,100 @@ def prepare_project_files():
 
 
 def read_students():
-    """Read students.csv and return it as a table."""
+    """Read the CSV file and make sure the data is clean and ready to use."""
     students = pd.read_csv(CSV_FILE, dtype={'RollNo': str})
 
-    # If an older CSV file is missing a column, add that column.
-    file_changed = False
+    # Add any missing columns so the file stays consistent.
     for column in CSV_COLUMNS:
         if column not in students.columns:
             students[column] = 0
-            file_changed = True
 
-    # Keep the columns in the same order every time.
     students = students[CSV_COLUMNS]
-
-    # Roll numbers are text, not numbers, so 01112 stays 01112.
     students['RollNo'] = students['RollNo'].fillna('').astype(str)
 
-    # Marks should always be numbers. Empty or invalid marks become 0.
-    students['Physics'] = pd.to_numeric(students['Physics'], errors='coerce').fillna(0)
-    students['Chemistry'] = pd.to_numeric(students['Chemistry'], errors='coerce').fillna(0)
-    students['Maths'] = pd.to_numeric(students['Maths'], errors='coerce').fillna(0)
-    students['English'] = pd.to_numeric(students['English'], errors='coerce').fillna(0)
-    students['IP'] = pd.to_numeric(students['IP'], errors='coerce').fillna(0)
+    # Convert marks to numbers. Empty values become 0.
+    for subject in SUBJECT_COLUMNS:
+        students[subject] = pd.to_numeric(students[subject], errors='coerce').fillna(0)
 
-    if file_changed:
-        students.to_csv(CSV_FILE, index=False)
-
+    students.to_csv(CSV_FILE, index=False)
     return students
 
 
-def calculate_result(physics, chemistry, maths, english, ip_marks):
-    """Calculate total marks, percentage, and grade for one student."""
-    total = physics + chemistry + maths + english + ip_marks
-    percentage = total / 5
-
+def get_grade(percentage):
+    """Return the grade for a percentage value."""
     if percentage >= 90:
-        grade = 'A+'
-    elif percentage >= 75:
-        grade = 'A'
-    elif percentage >= 60:
-        grade = 'B'
-    elif percentage >= 40:
-        grade = 'C'
-    else:
-        grade = 'Fail'
-
-    return total, percentage, grade
+        return 'A+'
+    if percentage >= 75:
+        return 'A'
+    if percentage >= 60:
+        return 'B'
+    if percentage >= 40:
+        return 'C'
+    return 'Fail'
 
 
-def make_student_result(row):
-    """Add Total, Percentage, and Grade to one student's row."""
-    total, percentage, grade = calculate_result(
-        row['Physics'],
-        row['Chemistry'],
-        row['Maths'],
-        row['English'],
-        row['IP']
-    )
+def add_result_columns(students):
+    """Add Total, Percentage, and Grade to the student table."""
+    students_with_results = students.copy()
+    students_with_results['Total'] = students_with_results[SUBJECT_COLUMNS].sum(axis=1)
+    students_with_results['Percentage'] = students_with_results['Total'] / len(SUBJECT_COLUMNS)
+    students_with_results['Grade'] = students_with_results['Percentage'].apply(get_grade)
+    return students_with_results
+
+
+def build_student_results(students):
+    """Convert each row into a simple dictionary for the HTML page."""
+    student_results = []
+    for _, row in students.iterrows():
+        student_results.append({
+            'Name': row['Name'],
+            'RollNo': row['RollNo'],
+            'Physics': row['Physics'],
+            'Chemistry': row['Chemistry'],
+            'Maths': row['Maths'],
+            'English': row['English'],
+            'IP': row['IP'],
+            'Total': row['Total'],
+            'Percentage': round(row['Percentage'], 2),
+            'Grade': row['Grade']
+        })
+
+    return student_results
+
+
+def calculate_class_stats(students):
+    """Create simple statistics for the home page."""
+    if students.empty:
+        return {
+            'total_students': 0,
+            'avg_percentage': 0,
+            'pass_percentage': 0
+        }
+
+    total_students = len(students)
+    average_percentage = round(students['Percentage'].mean(), 1)
+    pass_count = int((students['Percentage'] >= 40).sum())
+    pass_percentage = round((pass_count / total_students) * 100, 1)
 
     return {
-        'Name': row['Name'],
-        'RollNo': row['RollNo'],
-        'Physics': row['Physics'],
-        'Chemistry': row['Chemistry'],
-        'Maths': row['Maths'],
-        'English': row['English'],
-        'IP': row['IP'],
-        'Total': total,
-        'Percentage': round(percentage, 2),
-        'Grade': grade
-    }
-
-
-prepare_project_files()
-
-
-# Home page: shows total students, class average, and pass rate.
-@app.route('/')
-def index():
-    students = read_students()
-
-    if len(students) == 0:
-        total_students = 0
-        average_percentage = 0
-        pass_percentage = 0
-    else:
-        students['Total'] = (
-            students['Physics'] +
-            students['Chemistry'] +
-            students['Maths'] +
-            students['English'] +
-            students['IP']
-        )
-        students['Percentage'] = students['Total'] / 5
-
-        total_students = len(students)
-        average_percentage = round(students['Percentage'].mean(), 1)
-        pass_count = len(students[students['Percentage'] >= 40])
-        pass_percentage = round((pass_count / total_students) * 100, 1)
-
-    stats = {
         'total_students': total_students,
         'avg_percentage': average_percentage,
         'pass_percentage': pass_percentage
     }
 
-    return render_template('index.html', stats=stats)
 
-
-# Add student page: shows a form and saves the submitted marks.
-@app.route('/add', methods=['GET', 'POST'])
-def add_student():
-    if request.method == 'POST':
-        name = request.form['name']
-        roll_no = request.form['roll_no']
-        physics = float(request.form['physics'])
-        chemistry = float(request.form['chemistry'])
-        maths = float(request.form['maths'])
-        english = float(request.form['english'])
-        ip_marks = float(request.form['ip'])
-
-        students = read_students()
-
-        new_student = pd.DataFrame([{
-            'Name': name,
-            'RollNo': roll_no,
-            'Physics': physics,
-            'Chemistry': chemistry,
-            'Maths': maths,
-            'English': english,
-            'IP': ip_marks
-        }])
-
-        students = pd.concat([students, new_student], ignore_index=True)
-        students.to_csv(CSV_FILE, index=False)
-
-        return redirect(url_for('view_students'))
-
-    return render_template('add_student.html')
-
-
-# View all page: displays every student with total, percentage, grade, and search.
-@app.route('/students')
-def view_students():
-    search_text = request.args.get('query', '').strip().lower()
-    students = read_students()
-    student_results = []
-
-    for _, row in students.iterrows():
-        student_results.append(make_student_result(row))
-
-    if student_results:
-        percentages = [student['Percentage'] for student in student_results]
-        total_students = len(percentages)
-
-        for student in student_results:
-            below_or_equal = sum(1 for value in percentages if value <= student['Percentage'])
-            student['Percentile'] = round((below_or_equal / total_students) * 100, 2)
-
-        student_results.sort(key=lambda student: student['Percentage'], reverse=True)
-
-        for index, student in enumerate(student_results, start=1):
-            student['Rank'] = index
-
-    if search_text:
-        student_results = [
-            student for student in student_results
-            if search_text in str(student['Name']).lower() or search_text in str(student['RollNo']).lower()
-        ]
-
-    return render_template('view_students.html', students=student_results, query=search_text)
-
-
-# Keep the old search URL as a simple redirect to the view-all page.
-@app.route('/search', methods=['GET', 'POST'])
-def search():
-    if request.method == 'POST':
-        return redirect(url_for('view_students', query=request.form['query'].strip()))
-
-    return redirect(url_for('view_students'))
-
-
-# Analysis page: creates graphs and shows them on the page.
-@app.route('/analysis')
-def analysis():
-    students = read_students()
-
-    if len(students) == 0:
-        return render_template('analysis.html', has_data=False)
-
-    students['Total'] = (
-        students['Physics'] +
-        students['Chemistry'] +
-        students['Maths'] +
-        students['English'] +
-        students['IP']
-    )
-    students['Percentage'] = students['Total'] / 5
-
-    # 1. Subject-wise average marks graph.
-    subject_names = ['Physics', 'Chemistry', 'Maths', 'English', 'IP']
-    subject_averages = [
-        students['Physics'].mean(),
-        students['Chemistry'].mean(),
-        students['Maths'].mean(),
-        students['English'].mean(),
-        students['IP'].mean()
-    ]
+def create_analysis_graphs(students):
+    """Create and save the graphs used on the analysis page."""
+    subject_averages = [students[subject].mean() for subject in SUBJECT_COLUMNS]
 
     plt.figure(figsize=(6, 4))
-    plt.bar(subject_names, subject_averages, color=['#4F46E5', '#7C3AED', '#A78BFA', '#0EA5E9', '#10B981'])
+    plt.bar(SUBJECT_COLUMNS, subject_averages, color=['#4F46E5', '#7C3AED', '#A78BFA', '#0EA5E9', '#10B981'])
     plt.title('Subject Wise Average Marks')
     plt.ylabel('Average Marks')
     plt.tight_layout()
     plt.savefig(f'{GRAPH_FOLDER}/subject_avg.png')
     plt.close()
 
-    # 2. Top 5 students by total marks.
     top_students = students.sort_values('Total', ascending=False).head(5)
 
     plt.figure(figsize=(7, 4))
@@ -257,9 +133,8 @@ def analysis():
     plt.savefig(f'{GRAPH_FOLDER}/toppers.png')
     plt.close()
 
-    # 3. Pass/fail ratio.
-    pass_count = len(students[students['Percentage'] >= 40])
-    fail_count = len(students[students['Percentage'] < 40])
+    pass_count = int((students['Percentage'] >= 40).sum())
+    fail_count = int((students['Percentage'] < 40).sum())
     pass_percentage = round((pass_count / len(students)) * 100, 1)
 
     plt.figure(figsize=(4.5, 4.5))
@@ -279,7 +154,6 @@ def analysis():
     plt.savefig(f'{GRAPH_FOLDER}/pass_fail.png', bbox_inches='tight')
     plt.close()
 
-    # 4. Percentage of every student.
     plt.figure(figsize=(12, 5))
     plt.bar(students['Name'], students['Percentage'], color='#7C3AED')
     plt.title('Student Wise Percentage')
@@ -289,6 +163,88 @@ def analysis():
     plt.savefig(f'{GRAPH_FOLDER}/progress.png')
     plt.close()
 
+
+prepare_project_files()
+
+
+@app.route('/')
+def index():
+    """Show the home page with simple class statistics."""
+    students = add_result_columns(read_students())
+    stats = calculate_class_stats(students)
+    return render_template('index.html', stats=stats)
+
+
+@app.route('/add', methods=['GET', 'POST'])
+def add_student():
+    """Show the form and save a new student record."""
+    if request.method == 'POST':
+        new_student = {
+            'Name': request.form['name'],
+            'RollNo': request.form['roll_no'],
+            'Physics': float(request.form['physics']),
+            'Chemistry': float(request.form['chemistry']),
+            'Maths': float(request.form['maths']),
+            'English': float(request.form['english']),
+            'IP': float(request.form['ip'])
+        }
+
+        students = read_students()
+        students.loc[len(students)] = new_student
+        students.to_csv(CSV_FILE, index=False)
+
+        return redirect(url_for('view_students'))
+
+    return render_template('add_student.html')
+
+
+@app.route('/students')
+def view_students():
+    """Show all students with their results and ranking."""
+    search_text = request.args.get('query', '').strip().lower()
+    students = add_result_columns(read_students())
+    student_results = build_student_results(students)
+
+    if student_results:
+        percentages = [student['Percentage'] for student in student_results]
+        total_students = len(percentages)
+
+        for student in student_results:
+            students_below_or_equal = sum(1 for value in percentages if value <= student['Percentage'])
+            student['Percentile'] = round((students_below_or_equal / total_students) * 100, 2)
+
+        student_results.sort(key=lambda student: student['Percentage'], reverse=True)
+
+        for index, student in enumerate(student_results, start=1):
+            student['Rank'] = index
+
+    if search_text:
+        student_results = [
+            student for student in student_results
+            if search_text in str(student['Name']).lower() or search_text in str(student['RollNo']).lower()
+        ]
+
+    return render_template('view_students.html', students=student_results, query=search_text)
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    """Keep the older search URL working."""
+    if request.method == 'POST':
+        return redirect(url_for('view_students', query=request.form['query'].strip()))
+
+    return redirect(url_for('view_students'))
+
+
+@app.route('/analysis')
+def analysis():
+    """Create graphs and show them on the analysis page."""
+    students = add_result_columns(read_students())
+
+    if students.empty:
+        return render_template('analysis.html', has_data=False)
+
+    create_analysis_graphs(students)
     return render_template('analysis.html', has_data=True)
 
 
