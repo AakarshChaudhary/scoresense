@@ -187,6 +187,11 @@ def view_students():
             below_or_equal = sum(1 for value in percentages if value <= student['Percentage'])
             student['Percentile'] = round((below_or_equal / total_students) * 100, 2)
 
+        student_results.sort(key=lambda student: student['Percentage'], reverse=True)
+
+        for index, student in enumerate(student_results, start=1):
+            student['Rank'] = index
+
     if search_text:
         student_results = [
             student for student in student_results
