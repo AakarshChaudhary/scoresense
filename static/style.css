@@ -313,6 +313,14 @@ tr:hover td {
     background: #DDF1E3;
 }
 
+.failed-row td {
+    background: #FDECEC;
+}
+
+.failed-row:hover td {
+    background: #FADADA;
+}
+
 /* graphs */
 .graph-grid {
     display: grid;
