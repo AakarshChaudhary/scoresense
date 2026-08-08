@@ -4,7 +4,10 @@
         <h2>All Students</h2>
 
         <form method="GET" class="search-form">
-            <input type="text" name="query" value="{{ query }}" placeholder="Search by name or roll no">
+            <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" name="query" value="{{ query }}" placeholder="Search by name or roll no">
+            </div>
             <input type="submit" value="Search">
         </form>
     </div>

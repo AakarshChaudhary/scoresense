@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Student Performance Analytics Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
@@ -15,10 +16,10 @@
 
     <!-- navigation bar shown on every page -->
     <nav>
-      <a href="/">Home</a>
-      <a href="/add">Add Student</a>
-      <a href="/students">View All</a>
-      <a href="/analysis">Performance Analysis</a>
+      <a href="/"><i class="fas fa-home"></i> Home</a>
+      <a href="/add"><i class="fas fa-user-plus"></i> Add Student</a>
+      <a href="/students"><i class="fas fa-users"></i> View All</a>
+      <a href="/analysis"><i class="fas fa-chart-line"></i> Performance Analysis</a>
     </nav>
 
     <!-- page specific content goes here -->
